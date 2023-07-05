@@ -4,25 +4,29 @@ using Unity.VisualScripting;
 using UnityEngine;
 
 /*
-    - isGrounded & material no friction
+    - double jump
     - Fonctions et #regions
-    - jump coyote time
     - Jump anim --> animator Trigger
     - 
 */
 
 public class PlayerController : MonoBehaviour
 {
-    // Movements
+    // X Move
     private float moveSpeed = 5f;
+
+    // Jump
     private bool jumping = false;
     private float jumpHeight = 20f;
+    private float jumpCoyoteTime = 0.2f;
+    private float jumpCoyoteTimer;
     private bool canDoubleJump; //---------------------------------------
 
     [Header("Checks")]
     [SerializeField] private UnityEngine.Transform groundCheckPos;
     [SerializeField] private LayerMask whatIsGround;
     private bool isGrounded;
+    private bool isFalling;
 
     // References
     private Rigidbody2D rb;
@@ -47,9 +51,14 @@ public class PlayerController : MonoBehaviour
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpHeight);
         }
+        if((Input.GetKeyUp(KeyCode.Space) || Input.GetKeyUp(KeyCode.Z)) && !isFalling)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y / 3);
+        }
 
-        // Ground check
+        // Checks
         isGrounded = Physics2D.OverlapCircle(groundCheckPos.position, 0.15f, whatIsGround);
+        isFalling = rb.velocity.y < -0.1f;
 
         // flip
         if (rb.velocity.x < -0.1f)
