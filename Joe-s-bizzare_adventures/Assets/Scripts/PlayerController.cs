@@ -29,6 +29,18 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded;
     private bool isFalling;
 
+    [Header("Dash")]
+    [SerializeField] private GameObject dashEffect;
+    [SerializeField] private GameObject dashResetAnim;
+    private GameObject dashResetEffectObject;
+    private bool isDashing = false;
+    private float dashMultiplier = 2.5f;
+    private float dashTime = 0.2f;
+    private float dashCooldown = 0.3f;
+    private bool isInDashCooldown;
+    private bool dashReset;
+    private bool canDash;
+
     // References
     private Rigidbody2D rb;
     private Animator anim;
@@ -46,8 +58,16 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        MoveHorizontaly();
-        Jump();
+        if (!isDashing)
+        {
+            MoveHorizontaly();
+            Jump();
+        }
+        else
+        {
+            rb.velocity = new Vector2(transform.localScale.x * moveSpeed * dashMultiplier, 0f);
+        }
+        Dash();
         
         // Checks
         isGrounded = Physics2D.OverlapCircle(groundCheckPos.position, 0.15f, whatIsGround);
@@ -57,6 +77,7 @@ public class PlayerController : MonoBehaviour
             canDoubleJump = true;
             if(!jumping)
                 jumpCoyoteTimer = jumpCoyoteTime;
+            dashReset = true;
         }
         else
         {
@@ -122,6 +143,42 @@ public class PlayerController : MonoBehaviour
             rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y / 3);
             jumping = false;
         }
+    }
+
+    private void Dash()
+    {
+        // dash
+        canDash = !isDashing && !isInDashCooldown && dashReset;
+
+        if (dashResetEffectObject != null)
+            dashResetEffectObject.transform.position = transform.position;
+
+        if ((Input.GetKeyDown(KeyCode.LeftShift)) && canDash)
+        {
+            StartCoroutine(DashTime());
+        }
+    }
+    private IEnumerator DashTime()
+    {
+        isDashing = true;
+        dashReset = false;
+        rb.gravityScale = 0f;
+        for (int i = 0; i < 10; i++) 
+        {
+            yield return new WaitForSeconds(dashTime/10);
+            Instantiate(dashEffect, groundCheckPos.position, groundCheckPos.rotation);
+        }
+        isDashing = false;
+        rb.gravityScale = 5f;
+        isInDashCooldown = true;
+
+        yield return new WaitForSeconds(dashCooldown);
+
+        if(isGrounded)
+        {
+            dashResetEffectObject = Instantiate(dashResetAnim, transform.position, transform.rotation);
+        }
+        isInDashCooldown = false;
     }
 
     #endregion
