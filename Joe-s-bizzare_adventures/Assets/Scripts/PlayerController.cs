@@ -102,14 +102,14 @@ public class PlayerController : MonoBehaviour
     private void Jump()
     {
         // Jump
-        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Z)) && (isGrounded || jumpCoyoteTimer > 0))
+        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W)) && (isGrounded || jumpCoyoteTimer > 0))
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpHeight);
             jumping = true;
             jumpCoyoteTimer = -1f;
             anim.SetTrigger("Jump");
         }
-        else if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Z)) && canDoubleJump)
+        else if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W)) && canDoubleJump)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpHeight);
             Instantiate(doubleJumpEffect, groundCheckPos.position, groundCheckPos.rotation);
@@ -117,7 +117,7 @@ public class PlayerController : MonoBehaviour
             jumping = true;
             anim.SetTrigger("Jump");
         }
-        if ((Input.GetKeyUp(KeyCode.Space) || Input.GetKeyUp(KeyCode.Z)) && !isFalling)
+        if ((Input.GetKeyUp(KeyCode.Space) || Input.GetKeyUp(KeyCode.W) && !isFalling))
         {
             rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y / 3);
             jumping = false;
