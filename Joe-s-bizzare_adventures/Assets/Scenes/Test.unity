@@ -3351,6 +3351,8 @@ MonoBehaviour:
   whatIsGround:
     serializedVersion: 2
     m_Bits: 64
+  dashEffect: {fileID: 5373669528556408161, guid: 4c30a3cf313bfe34eb7b69755611e1a9, type: 3}
+  dashResetAnim: {fileID: 5373669528556408161, guid: fae5d1292437d0d4eb858a32d03374a1, type: 3}
 --- !u!1 &1754796837
 GameObject:
   m_ObjectHideFlags: 0
