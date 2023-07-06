@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-/*
-    - Fonctions et #regions
-    - 
-*/
 
 public class PlayerController : MonoBehaviour
 {
@@ -41,6 +37,13 @@ public class PlayerController : MonoBehaviour
     private bool dashReset;
     private bool canDash;
 
+    [Header("Attack")]
+    [SerializeField] private UnityEngine.Transform attackFrontCheck;
+    [SerializeField] private UnityEngine.Transform attackUpCheck;
+    [SerializeField] private LayerMask whatIsHittable;
+    private float attackCooldown = 0.7f;
+    private bool isInAttackCooldown;
+
     // References
     private Rigidbody2D rb;
     private Animator anim;
@@ -68,6 +71,7 @@ public class PlayerController : MonoBehaviour
             rb.velocity = new Vector2(transform.localScale.x * moveSpeed * dashMultiplier, 0f);
         }
         Dash();
+        PlayerAttack();
         
         // Checks
         isGrounded = Physics2D.OverlapCircle(groundCheckPos.position, 0.15f, whatIsGround);
@@ -123,14 +127,14 @@ public class PlayerController : MonoBehaviour
     private void Jump()
     {
         // Jump
-        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Z) || Input.GetKeyDown(KeyCode.W)) && (isGrounded || jumpCoyoteTimer > 0))
+        if (Input.GetKeyDown(KeyCode.Space) && (isGrounded || jumpCoyoteTimer > 0))
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpHeight);
             jumping = true;
             jumpCoyoteTimer = -1f;
             anim.SetTrigger("Jump");
         }
-        else if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Z) || Input.GetKeyDown(KeyCode.W)) && canDoubleJump)
+        else if (Input.GetKeyDown(KeyCode.Space) && canDoubleJump)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpHeight);
             Instantiate(doubleJumpEffect, groundCheckPos.position, groundCheckPos.rotation);
@@ -138,7 +142,7 @@ public class PlayerController : MonoBehaviour
             jumping = true;
             anim.SetTrigger("Jump");
         }
-        if ((Input.GetKeyUp(KeyCode.Space) || Input.GetKeyUp(KeyCode.Z) || Input.GetKeyUp(KeyCode.W)) && !isFalling)
+        if (Input.GetKeyUp(KeyCode.Space) && !isFalling)
         {
             rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y / 3);
             jumping = false;
@@ -179,6 +183,47 @@ public class PlayerController : MonoBehaviour
             dashResetEffectObject = Instantiate(dashResetAnim, transform.position, transform.rotation);
         }
         isInDashCooldown = false;
+    }
+
+    private void PlayerAttack()
+    {
+        if (Input.GetKeyDown(KeyCode.K) && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Z)) && !isInAttackCooldown)
+        {
+            anim.SetTrigger("PoumPoumUp");
+            PlayerAttackDetect("Up");
+            StartCoroutine(AttackCooldown());
+        }
+        else if (Input.GetKeyDown(KeyCode.K) && !isInAttackCooldown && !isGrounded)
+        {
+            anim.SetTrigger("AirPoumPoum");
+            PlayerAttackDetect("Front");
+            StartCoroutine(AttackCooldown());
+        }
+        else if (Input.GetKeyDown(KeyCode.K) && !isInAttackCooldown && isGrounded)
+        {
+            anim.SetTrigger("PoumPoumFront");
+            PlayerAttackDetect("Front");
+            StartCoroutine(AttackCooldown());
+        }
+
+    }
+    private IEnumerator AttackCooldown()
+    {
+        isInAttackCooldown = true;
+        yield return new WaitForSeconds(attackCooldown);
+        isInAttackCooldown = false;
+    }
+    private void PlayerAttackDetect(string attackDirection)
+    {
+        if (attackDirection == "Front")
+        {
+            var attackCollision = Physics2D.OverlapBoxAll(attackFrontCheck.position, new Vector2(0.6357898f, 0.8252064f), 0, whatIsHittable);
+        }
+        else if (attackDirection == "Up")
+        {
+            var attackCollision = Physics2D.OverlapBoxAll(attackUpCheck.position, new Vector2(0.7503977f, 0.2365107f), 0, whatIsHittable);
+        }
+        
     }
 
     #endregion
